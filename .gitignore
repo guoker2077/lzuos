@@ -105,3 +105,6 @@ doc/html/
 *.img
 *.bin
 !fw_jump.bin
+resource
+gdb-13.1.tar.xz
+gdb-13.1/
