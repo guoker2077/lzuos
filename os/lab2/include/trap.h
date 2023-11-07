@@ -62,4 +62,5 @@ void set_stvec();
 void print_trapframe(struct trapframe *tf);
 void print_regs(struct pushregs *gpr);
 
+void keyboard_int(int8_t c);
 #endif

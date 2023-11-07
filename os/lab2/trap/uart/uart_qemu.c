@@ -1,5 +1,9 @@
 #include <uart.h>
 #include <stddef.h>
+#include <trap.h>
+#include <string.h>
+#include <rtc.h>
+#include <time.h>
 static int8_t uart_16550a_read();
 static void uart_16550a_directly_write(int8_t c);
 static void uart_16550a_interrupt_handler();
@@ -80,12 +84,61 @@ static void uart_16550a_putc(int8_t c)
     uart_16550a_directly_write(c);
 }
 
+char buf[20];
+
+void my_keyboard_int(int8_t c)
+{
+    if(c==0x12 || c==0x13)
+    {
+        keyboard_int(c);
+    }
+    else if(c==0xd)
+    {
+        char date[]="date";
+        if(!strcmp(date,buf))
+            date_func();
+        //else
+            //kprintf("No such command!\n");
+    }
+}
+
+void detect_command(int8_t c)
+{
+    if(c==0xd || c==0x12 || c==0x13)
+    {
+        my_keyboard_int(c);
+        char *p = buf;
+        while(*p)
+        {
+            *p = '\0';
+            p++;
+        }
+    }
+    else if((c>=0x61 && c<= 0x7a) || (c>=0x41 && c<= 0x5a))
+    {
+        int len = strlen(buf);
+        if(len >= 19)   my_keyboard_int(0xd);
+        else
+        {
+            buf[len] = (char)c;
+        }
+    }
+}
+
 static void uart_16550a_interrupt_handler()
 {
     volatile struct uart_qemu_regs *regs = (struct uart_qemu_regs *)uart_device.uart_start_addr;
     while (regs->LSR & (1 << LSR_DR)) {
         int8_t c = uart_read();
         if (c > -1)
+        {
+            if(c==0xd)
+                kprintf("\n");
+            //kprintf("%x \n",c);
+            //my_keyboard_int(c);
+            detect_command(c);
             uart_16550a_putc(c);
+            
+        }     
     }
 }

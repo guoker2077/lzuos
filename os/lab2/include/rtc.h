@@ -37,4 +37,5 @@ void rtc_init();
 
 void goldfish_rtc_init();
 void sunxi_rtc_init();
+uint64_t goldfish_rtc_read_time();
 #endif /* end of include guard: __RTC_H__ */

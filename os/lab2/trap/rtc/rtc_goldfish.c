@@ -35,6 +35,8 @@ uint64_t goldfish_rtc_read_time() // 取得纳秒时间戳
 	return ns;
 }
 
+
+
 void goldfish_rtc_set_time(uint64_t now) // now为纳秒时间戳
 {
 	volatile struct goldfish_rtc_regs *rtc =

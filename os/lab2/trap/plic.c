@@ -36,8 +36,9 @@ void plic_init()
     switch (plic_device.id) {
     case QEMU_PLIC:
         plic_device.plic_start_addr = (volatile struct plic_regs *)0x0c000000;
-        plic_enable_interrupt(RTC_GOLDFISH_IRQ);
+        plic_enable_interrupt(RTC_GOLDFISH_IRQ); //timer int
         plic_enable_interrupt(UART_QEMU_IRQ);
+        plic_enable_interrupt(VIRTIO_IRQ);
         plic_set_priority(RTC_GOLDFISH_IRQ, 1);
         plic_set_priority(UART_QEMU_IRQ, 1);
         break;
@@ -49,7 +50,7 @@ void plic_init()
         plic_set_priority(RTC_SUNXI_IRQ, 1);
         break;
     }
-    plic_set_threshold(0);
+    plic_set_threshold(0); //set threshold value of int , when it is set to 0, it'll accept all ints.
     set_csr(sie, 1 << IRQ_S_EXT);
 }
 

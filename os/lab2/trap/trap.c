@@ -25,8 +25,11 @@ static inline struct trapframe *trap_dispatch(struct trapframe *tf);
 static struct trapframe *interrupt_handler(struct trapframe *tf);
 static struct trapframe *exception_handler(struct trapframe *tf);
 
+struct trapframe* global_tf;
+
 static struct trapframe *external_handler(struct trapframe *tf)
 {
+    
     uint32_t int_id;
     switch (int_id = plic_claim()) {
     case 1 ... 8:
@@ -34,15 +37,16 @@ static struct trapframe *external_handler(struct trapframe *tf)
         break;
     case UART_SUNXI_IRQ:
     case UART_QEMU_IRQ:
+        global_tf = tf;
         uart_interrupt_handler();
         break;
     case RTC_GOLDFISH_IRQ:
     case RTC_SUNXI_IRQ:
-        rtc_interrupt_handler();
+        /*rtc_interrupt_handler();
         kprintf("!!RTC ALARM!!\n");
         set_alarm(read_time() + 1000000000);
         kprintf("timestamp now: %u\n", read_time());
-        kprintf("next alarm time: %u\n", read_alarm());
+        kprintf("next alarm time: %u\n", read_alarm());*/
         break;
     /* Unsupported interrupt */
     default:
@@ -287,4 +291,22 @@ void print_regs(struct pushregs *gpr)
     kprintf("  t4       0x%x\n", gpr->t4);
     kprintf("  t5       0x%x\n", gpr->t5);
     kprintf("  t6       0x%x\n\n", gpr->t6);
+}
+
+
+void keyboard_int(int8_t c)
+{
+    if(c==0x12)
+    {
+        kputs("crtl + r");
+        print_trapframe(global_tf);
+        sbi_reboot(); 
+    }
+    else if(c==0x13)
+    {
+        kputs("crtl + s");
+        print_trapframe(global_tf);
+        sbi_shutdown(); 
+    }
+    
 }
